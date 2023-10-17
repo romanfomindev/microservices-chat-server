@@ -7,7 +7,7 @@ create table chat_users
     chat_id    int,
     created_at timestamp not null default now(),
     updated_at timestamp,
-    FOREIGN KEY (chat_id) REFERENCES chats (id) ON DELETE CASCADE
+    foreign key (chat_id) references chats (id) on delete cascade
 );
 -- +goose StatementEnd
 

@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/jackc/pgx/v4"
 	"github.com/romanfomindev/microservices-chat-server/internal/config"
 	"github.com/romanfomindev/microservices-chat-server/internal/config/env"
 	handlers "github.com/romanfomindev/microservices-chat-server/internal/handlers/chat_api_v1"
@@ -42,8 +43,11 @@ func main() {
 
 	s := grpc.NewServer()
 	reflection.Register(s)
-
-	chatRepo, err := pg.NewChatRepository(ctx, pgConfig)
+	conn, err := pgx.Connect(ctx, pgConfig.DSN())
+	if err != nil {
+		log.Fatalf("failed connect to db: %v", err)
+	}
+	chatRepo, err := pg.NewChatRepository(conn)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
