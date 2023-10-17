@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v4"
-	"github.com/romanfomindev/microservices-chat-server/internal/config"
 	"github.com/romanfomindev/microservices-chat-server/internal/repositories"
 )
 
@@ -12,12 +11,7 @@ type Chat struct {
 	conn *pgx.Conn
 }
 
-func NewChatRepository(ctx context.Context, cfg config.PGConfig) (repositories.Chat, error) {
-	conn, err := pgx.Connect(ctx, cfg.DSN())
-	if err != nil {
-		return nil, err
-	}
-
+func NewChatRepository(conn *pgx.Conn) (repositories.Chat, error) {
 	return &Chat{
 		conn: conn,
 	}, nil
@@ -29,7 +23,6 @@ func (r *Chat) Create(ctx context.Context, name string) (uint64, error) {
 	sqlStatement := "INSERT INTO chats (name) VALUES ($1) RETURNING id"
 
 	err := r.conn.QueryRow(ctx, sqlStatement, name).Scan(&lastInsertId)
-
 	if err != nil {
 		return 0, err
 	}
@@ -39,8 +32,8 @@ func (r *Chat) Create(ctx context.Context, name string) (uint64, error) {
 
 func (r *Chat) Delete(ctx context.Context, id uint64) error {
 	sqlStatement := "DELETE FROM chats  WHERE id = $1"
-	_, err := r.conn.Exec(ctx, sqlStatement, id)
 
+	_, err := r.conn.Exec(ctx, sqlStatement, id)
 	if err != nil {
 		return err
 	}
