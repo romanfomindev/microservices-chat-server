@@ -2,22 +2,24 @@ package handlers
 
 import (
 	"context"
+	"github.com/romanfomindev/microservices-chat-server/internal/convertor"
+	"github.com/romanfomindev/microservices-chat-server/internal/models"
+	"github.com/romanfomindev/microservices-chat-server/internal/services/chat"
 	"log"
 
 	"github.com/brianvoe/gofakeit"
-	"github.com/romanfomindev/microservices-chat-server/internal/managers"
 	desc "github.com/romanfomindev/microservices-chat-server/pkg/chat_api_v1"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type ChatApiService struct {
 	desc.UnimplementedChatApiServer
-	Manager *managers.ChatManager
+	Service *chat.ChatService
 }
 
-func NewChatService(manager *managers.ChatManager) desc.ChatApiServer {
+func NewChatService(service *chat.ChatService) *ChatApiService {
 	return &ChatApiService{
-		Manager: manager,
+		Service: service,
 	}
 }
 
@@ -25,7 +27,10 @@ func (s *ChatApiService) Create(ctx context.Context, request *desc.CreateRequest
 	log.Printf("usernames: %+v", request.GetUsernames())
 
 	chatName := gofakeit.BeerName()
-	chatId, err := s.Manager.Create(ctx, chatName, request.GetUsernames())
+	chatModel := models.Chat{
+		Name: chatName,
+	}
+	chatId, err := s.Service.Create(ctx, chatModel, convertor.ToUserChatFromDesc(request))
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +42,7 @@ func (s *ChatApiService) Create(ctx context.Context, request *desc.CreateRequest
 
 func (s *ChatApiService) Delete(ctx context.Context, request *desc.DeleteRequest) (*emptypb.Empty, error) {
 	log.Printf("ID: %+v", request.GetId())
-	err := s.Manager.Delete(ctx, request.GetId())
+	err := s.Service.Delete(ctx, request.GetId())
 	if err != nil {
 		return nil, err
 	}
