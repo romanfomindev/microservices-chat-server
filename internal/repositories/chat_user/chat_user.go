@@ -30,11 +30,14 @@ func (r *ChatUser) CreateBatch(ctx context.Context, chatUsers models.ChatUser) e
 		valueArgs = append(valueArgs, username)
 		i++
 	}
+
 	sqlStatement := fmt.Sprintf("INSERT INTO chat_users (chat_id, username) VALUES %s", strings.Join(valueStrings, ","))
+
 	q := db.Query{
 		Name:     "chat.Create",
 		QueryRaw: sqlStatement,
 	}
+
 	_, err := r.db.DB().ExecContext(ctx, q, valueArgs...)
 
 	return err
