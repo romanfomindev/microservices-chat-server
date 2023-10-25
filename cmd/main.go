@@ -6,8 +6,6 @@ import (
 	"log"
 )
 
-//var configPath string = ".env"
-
 func main() {
 	ctx := context.Background()
 
