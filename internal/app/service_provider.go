@@ -95,8 +95,7 @@ func (s *serviceProvider) ChatRepository(ctx context.Context) repositories.Chat 
 
 func (s *serviceProvider) ChatUserRepository(ctx context.Context) repositories.ChatUser {
 	if s.chatUserRepository == nil {
-		repo := chat_user.NewChatUser(s.DBClient(ctx))
-		s.chatUserRepository = repo
+		s.chatUserRepository = chat_user.NewChatUser(s.DBClient(ctx))
 	}
 
 	return s.chatUserRepository
@@ -104,16 +103,14 @@ func (s *serviceProvider) ChatUserRepository(ctx context.Context) repositories.C
 
 func (s *serviceProvider) ChatService(ctx context.Context) *chat.ChatService {
 	if s.chatService == nil {
-		service := chat.NewChatService(s.ChatRepository(ctx), s.ChatUserRepository(ctx), s.TxManager(ctx))
-		s.chatService = service
+		s.chatService = chat.NewChatService(s.ChatRepository(ctx), s.ChatUserRepository(ctx), s.TxManager(ctx))
 	}
 	return s.chatService
 }
 
 func (s *serviceProvider) ChatHandlers(ctx context.Context) *handlers.ChatApiService {
 	if s.chatHandlers == nil {
-		chatHandlers := handlers.NewChatService(s.ChatService(ctx))
-		s.chatHandlers = chatHandlers
+		s.chatHandlers = handlers.NewChatService(s.ChatService(ctx))
 	}
 	return s.chatHandlers
 }
