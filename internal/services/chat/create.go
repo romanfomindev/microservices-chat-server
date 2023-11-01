@@ -2,10 +2,11 @@ package chat
 
 import (
 	"context"
+
 	"github.com/romanfomindev/microservices-chat-server/internal/models"
 )
 
-func (s *ChatService) Create(ctx context.Context, chat models.Chat, chatUsers models.ChatUser) (uint64, error) {
+func (s *Chat) Create(ctx context.Context, chat models.Chat, chatUsers models.ChatUser) (uint64, error) {
 	var chatId uint64
 
 	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {

@@ -2,22 +2,21 @@ package handlers
 
 import (
 	"context"
-	"github.com/romanfomindev/microservices-chat-server/internal/convertor"
-	"github.com/romanfomindev/microservices-chat-server/internal/models"
-	"github.com/romanfomindev/microservices-chat-server/internal/services/chat"
 	"log"
 
-	"github.com/brianvoe/gofakeit"
+	"github.com/romanfomindev/microservices-chat-server/internal/convertor"
+	"github.com/romanfomindev/microservices-chat-server/internal/models"
+	"github.com/romanfomindev/microservices-chat-server/internal/services"
 	desc "github.com/romanfomindev/microservices-chat-server/pkg/chat_api_v1"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type ChatApiService struct {
 	desc.UnimplementedChatApiServer
-	Service *chat.ChatService
+	Service services.ChatService
 }
 
-func NewChatService(service *chat.ChatService) *ChatApiService {
+func NewChatService(service services.ChatService) *ChatApiService {
 	return &ChatApiService{
 		Service: service,
 	}
@@ -26,9 +25,8 @@ func NewChatService(service *chat.ChatService) *ChatApiService {
 func (s *ChatApiService) Create(ctx context.Context, request *desc.CreateRequest) (*desc.CreateResponse, error) {
 	log.Printf("usernames: %+v", request.GetUsernames())
 
-	chatName := gofakeit.BeerName()
 	chatModel := models.Chat{
-		Name: chatName,
+		Name: request.GetChatName(),
 	}
 	chatId, err := s.Service.Create(ctx, chatModel, convertor.ToUserChatFromDesc(request))
 	if err != nil {

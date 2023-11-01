@@ -2,9 +2,9 @@ package chat
 
 import (
 	"context"
-	"github.com/romanfomindev/microservices-chat-server/internal/client/db"
 
 	"github.com/romanfomindev/microservices-chat-server/internal/repositories"
+	"github.com/romanfomindev/platform_common/pkg/db"
 )
 
 type Chat struct {
