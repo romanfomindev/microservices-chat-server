@@ -2,18 +2,20 @@ package app
 
 import (
 	"context"
-	"github.com/romanfomindev/microservices-chat-server/internal/client/db"
-	"github.com/romanfomindev/microservices-chat-server/internal/client/db/pg"
-	"github.com/romanfomindev/microservices-chat-server/internal/client/db/transaction"
-	"github.com/romanfomindev/microservices-chat-server/internal/closer"
+	"log"
+
 	"github.com/romanfomindev/microservices-chat-server/internal/config"
 	"github.com/romanfomindev/microservices-chat-server/internal/config/env"
 	handlers "github.com/romanfomindev/microservices-chat-server/internal/handlers/chat_api_v1"
 	"github.com/romanfomindev/microservices-chat-server/internal/repositories"
 	chatRepo "github.com/romanfomindev/microservices-chat-server/internal/repositories/chat"
 	"github.com/romanfomindev/microservices-chat-server/internal/repositories/chat_user"
+	"github.com/romanfomindev/microservices-chat-server/internal/services"
 	"github.com/romanfomindev/microservices-chat-server/internal/services/chat"
-	"log"
+	"github.com/romanfomindev/platform_common/pkg/closer"
+	"github.com/romanfomindev/platform_common/pkg/db"
+	"github.com/romanfomindev/platform_common/pkg/db/pg"
+	"github.com/romanfomindev/platform_common/pkg/db/transaction"
 )
 
 type serviceProvider struct {
@@ -23,7 +25,7 @@ type serviceProvider struct {
 	grpcConfig         config.GRPCConfig
 	chatRepository     repositories.Chat
 	chatUserRepository repositories.ChatUser
-	chatService        *chat.ChatService
+	chatService        services.ChatService
 	chatHandlers       *handlers.ChatApiService
 }
 
@@ -59,7 +61,7 @@ func (s *serviceProvider) GRPCConfig() config.GRPCConfig {
 
 func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 	if s.dbClient == nil {
-		cl, err := pg.New(ctx, s.PGConfig().DSN())
+		cl, err := pg.New(ctx, s.PGConfig().DSN(), s.pgConfig.Timeout())
 		if err != nil {
 			log.Fatalf("failed to create db client: %v", err)
 		}
@@ -101,7 +103,7 @@ func (s *serviceProvider) ChatUserRepository(ctx context.Context) repositories.C
 	return s.chatUserRepository
 }
 
-func (s *serviceProvider) ChatService(ctx context.Context) *chat.ChatService {
+func (s *serviceProvider) ChatService(ctx context.Context) services.ChatService {
 	if s.chatService == nil {
 		s.chatService = chat.NewChatService(s.ChatRepository(ctx), s.ChatUserRepository(ctx), s.TxManager(ctx))
 	}
