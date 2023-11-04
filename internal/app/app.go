@@ -2,14 +2,14 @@ package app
 
 import (
 	"context"
-	"github.com/romanfomindev/microservices-chat-server/internal/config"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/reflection"
 	"log"
 	"net"
 
+	"github.com/romanfomindev/microservices-chat-server/internal/config"
 	desc "github.com/romanfomindev/microservices-chat-server/pkg/chat_api_v1"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/reflection"
 )
 
 type App struct {

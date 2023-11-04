@@ -9,11 +9,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/romanfomindev/microservices-chat-server/internal/models"
 	"github.com/romanfomindev/microservices-chat-server/internal/repositories"
+	repoMock "github.com/romanfomindev/microservices-chat-server/internal/repositories/mocks"
 	"github.com/romanfomindev/microservices-chat-server/internal/services/chat"
 	"github.com/romanfomindev/platform_common/pkg/db"
 	"github.com/stretchr/testify/require"
-
-	repoMock "github.com/romanfomindev/microservices-chat-server/internal/repositories/mocks"
 )
 
 type txManagerMock struct {

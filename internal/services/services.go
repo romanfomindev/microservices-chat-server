@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+
 	"github.com/romanfomindev/microservices-chat-server/internal/models"
 )
 

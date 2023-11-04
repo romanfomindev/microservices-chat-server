@@ -3,13 +3,11 @@ package chat_user
 import (
 	"context"
 	"fmt"
-
-	"github.com/romanfomindev/microservices-chat-server/internal/models"
-	"github.com/romanfomindev/platform_common/pkg/db"
-
 	"strings"
 
+	"github.com/romanfomindev/microservices-chat-server/internal/models"
 	"github.com/romanfomindev/microservices-chat-server/internal/repositories"
+	"github.com/romanfomindev/platform_common/pkg/db"
 )
 
 type ChatUser struct {
