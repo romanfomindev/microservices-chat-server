@@ -30,7 +30,7 @@ func NewPGConfig() (config.PGConfig, error) {
 
 	timeout, err := strconv.Atoi(pgTimeout)
 	if err != nil {
-		timeout = 30
+		return nil, errors.New("not read timeout")
 	}
 
 	return &pgConfig{

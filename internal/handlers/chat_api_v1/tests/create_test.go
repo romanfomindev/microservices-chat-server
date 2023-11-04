@@ -8,7 +8,6 @@ import (
 	"github.com/brianvoe/gofakeit"
 	"github.com/gojuno/minimock/v3"
 	handlers "github.com/romanfomindev/microservices-chat-server/internal/handlers/chat_api_v1"
-	"github.com/romanfomindev/microservices-chat-server/internal/models"
 	"github.com/romanfomindev/microservices-chat-server/internal/services"
 	desc "github.com/romanfomindev/microservices-chat-server/pkg/chat_api_v1"
 	"github.com/stretchr/testify/require"
@@ -31,14 +30,6 @@ func TestCreateHandler(t *testing.T) {
 		userNames = []string{gofakeit.FirstName(), gofakeit.FirstName(), gofakeit.FirstName()}
 		id        = gofakeit.Uint64()
 		name      = gofakeit.Name()
-
-		chat = models.Chat{
-			Name: name,
-		}
-		chatUser = models.ChatUser{
-			ChatId:    0,
-			Usernames: userNames,
-		}
 
 		req = &desc.CreateRequest{
 			ChatName:  name,
@@ -71,7 +62,7 @@ func TestCreateHandler(t *testing.T) {
 			err:  nil,
 			chatServiceMock: func(mc *minimock.Controller) services.ChatService {
 				mock := serviceMock.NewChatServiceMock(t)
-				mock.CreateMock.Expect(ctx, chat, chatUser).Return(id, nil)
+				mock.CreateMock.Return(id, nil)
 
 				return mock
 			},
@@ -86,7 +77,7 @@ func TestCreateHandler(t *testing.T) {
 			err:  errService,
 			chatServiceMock: func(mc *minimock.Controller) services.ChatService {
 				mock := serviceMock.NewChatServiceMock(t)
-				mock.CreateMock.Expect(ctx, chat, chatUser).Return(0, errService)
+				mock.CreateMock.Return(0, errService)
 
 				return mock
 			},
