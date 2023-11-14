@@ -2,8 +2,9 @@ package main
 
 import (
 	"context"
-	"github.com/romanfomindev/microservices-chat-server/internal/app"
 	"log"
+
+	"github.com/romanfomindev/microservices-chat-server/internal/app"
 )
 
 func main() {
