@@ -16,6 +16,7 @@ lint:
 
 generate:
 	make generate-chat-api
+	make generate-access
 
 generate-chat-api:
 	mkdir -p pkg/chat_api_v1
@@ -25,6 +26,15 @@ generate-chat-api:
 	--go-grpc_out=pkg/chat_api_v1 --go-grpc_opt=paths=source_relative \
 	--plugin=protoc-gen-go-grpc=bin/protoc-gen-go-grpc \
 	api/chat_api_v1/chat_api_v1.proto
+
+generate-access:
+	mkdir -p pkg/access_v1
+	protoc --proto_path api/access_v1 \
+	--go_out=pkg/access_v1 --go_opt=paths=source_relative \
+	--plugin=protoc-gen-go=bin/protoc-gen-go \
+	--go-grpc_out=pkg/access_v1 --go-grpc_opt=paths=source_relative \
+	--plugin=protoc-gen-go-grpc=bin/protoc-gen-go-grpc \
+	api/access_v1/access.proto
 
 test:
 	go clean -testcache
