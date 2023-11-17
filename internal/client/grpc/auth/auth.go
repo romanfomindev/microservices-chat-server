@@ -10,19 +10,17 @@ import (
 const ServicePort = 50052
 
 type Auth struct {
-	connection *grpc.ClientConn
+	client accessDesc.AccessServiceClient
 }
 
 func NewAuth(connection *grpc.ClientConn) *Auth {
 	return &Auth{
-		connection: connection,
+		client: accessDesc.NewAccessServiceClient(connection),
 	}
 }
 
 func (a *Auth) CheckAccess(ctx context.Context, endpoint string) error {
-	cl := accessDesc.NewAccessServiceClient(a.connection)
-
-	_, err := cl.Check(ctx, &accessDesc.CheckRequest{
+	_, err := a.client.Check(ctx, &accessDesc.CheckRequest{
 		EndpointAddress: endpoint,
 	})
 
