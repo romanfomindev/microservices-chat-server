@@ -2,7 +2,10 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"log"
+
+	"github.com/romanfomindev/microservices-chat-server/internal/interceptor"
 
 	"github.com/romanfomindev/microservices-chat-server/internal/convertor"
 	"github.com/romanfomindev/microservices-chat-server/internal/models"
@@ -13,12 +16,14 @@ import (
 
 type ChatApiService struct {
 	desc.UnimplementedChatApiServer
-	Service services.ChatService
+	Service       services.ChatService
+	StreamService services.Implementation
 }
 
-func NewChatService(service services.ChatService) *ChatApiService {
+func NewChatService(service services.ChatService, streamService services.Implementation) *ChatApiService {
 	return &ChatApiService{
-		Service: service,
+		Service:       service,
+		StreamService: streamService,
 	}
 }
 
@@ -49,7 +54,34 @@ func (s *ChatApiService) Delete(ctx context.Context, request *desc.DeleteRequest
 }
 
 func (s *ChatApiService) SendMessage(ctx context.Context, request *desc.SendMessageRequest) (*emptypb.Empty, error) {
-	log.Printf("From: %s, Text: %s, Timestamp: %+v", request.GetFrom(), request.GetText(), request.GetTimestamp())
+	email := ctx.Value("email").(string)
+	checkUserInChat := s.Service.CheckUserInChat(ctx, request.ChatId, email)
+	if !checkUserInChat {
+		return nil, errors.New("user not in chat")
+	}
+
+	msg := request.GetMessage()
+	msg.From = email
+	err := s.StreamService.SendMessage(request.GetChatId(), msg)
+	if err != nil {
+		return &emptypb.Empty{}, err
+	}
 
 	return &emptypb.Empty{}, nil
+}
+
+func (s *ChatApiService) ConnectChat(req *desc.ConnectChatRequest, stream desc.ChatApi_ConnectChatServer) error {
+	chatId := req.GetChatId()
+
+	token, err := interceptor.GetAccessToken(stream.Context())
+	if err != nil {
+		return err
+	}
+
+	email, err := interceptor.CheckAccess(token, "/chat_api_v1.ChatApi/ConnectChat")
+	if err != nil {
+		return err
+	}
+
+	return s.StreamService.ConnectChat(chatId, email, stream)
 }

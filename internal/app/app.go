@@ -5,7 +5,9 @@ import (
 	"log"
 	"net"
 
+	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/romanfomindev/microservices-chat-server/internal/config"
+	"github.com/romanfomindev/microservices-chat-server/internal/interceptor"
 	desc "github.com/romanfomindev/microservices-chat-server/pkg/chat_api_v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -64,12 +66,16 @@ func (a *App) initServiceProvider(_ context.Context) error {
 }
 
 func (a *App) initGRPCServer(ctx context.Context) error {
-	a.grpcServer = grpc.NewServer(grpc.Creds(insecure.NewCredentials()))
+	a.grpcServer = grpc.NewServer(
+		grpc.Creds(insecure.NewCredentials()),
+		grpc.UnaryInterceptor(grpcMiddleware.ChainUnaryServer(
+			interceptor.AccessInterceptor,
+		)),
+	)
 
 	reflection.Register(a.grpcServer)
 
 	desc.RegisterChatApiServer(a.grpcServer, a.serviceProvider.ChatHandlers(ctx))
-
 	return nil
 }
 

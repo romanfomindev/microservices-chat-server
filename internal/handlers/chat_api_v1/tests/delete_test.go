@@ -17,6 +17,7 @@ import (
 
 func TestDeleteHandler(t *testing.T) {
 	type chatServiceMockFunc func(mc *minimock.Controller) services.ChatService
+	type implimentationMockFunc func(mc *minimock.Controller) services.Implementation
 
 	type args struct {
 		ctx     context.Context
@@ -38,11 +39,12 @@ func TestDeleteHandler(t *testing.T) {
 	)
 
 	tests := []struct {
-		name            string
-		args            args
-		want            *emptypb.Empty
-		err             error
-		chatServiceMock chatServiceMockFunc
+		name               string
+		args               args
+		want               *emptypb.Empty
+		err                error
+		chatServiceMock    chatServiceMockFunc
+		implimentationMock implimentationMockFunc
 	}{
 		{
 			name: "success case",
@@ -55,6 +57,12 @@ func TestDeleteHandler(t *testing.T) {
 			chatServiceMock: func(mc *minimock.Controller) services.ChatService {
 				mock := serviceMock.NewChatServiceMock(t)
 				mock.DeleteMock.Expect(ctx, id).Return(nil)
+
+				return mock
+			},
+			implimentationMock: func(mc *minimock.Controller) services.Implementation {
+				mock := serviceMock.NewImplementationMock(t)
+				mock.ConnectChatMock.Return(nil)
 
 				return mock
 			},
@@ -73,6 +81,12 @@ func TestDeleteHandler(t *testing.T) {
 
 				return mock
 			},
+			implimentationMock: func(mc *minimock.Controller) services.Implementation {
+				mock := serviceMock.NewImplementationMock(t)
+				mock.ConnectChatMock.Return(nil)
+
+				return mock
+			},
 		},
 	}
 
@@ -80,7 +94,8 @@ func TestDeleteHandler(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			chatServiceMock := tt.chatServiceMock(mc)
-			handler := handlers.NewChatService(chatServiceMock)
+			implimentationMock := tt.implimentationMock(mc)
+			handler := handlers.NewChatService(chatServiceMock, implimentationMock)
 			response, err := handler.Delete(ctx, req)
 
 			require.Equal(t, tt.want, response)

@@ -26,6 +26,7 @@ type ChatApiClient interface {
 	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error)
 	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ConnectChat(ctx context.Context, in *ConnectChatRequest, opts ...grpc.CallOption) (ChatApi_ConnectChatClient, error)
 }
 
 type chatApiClient struct {
@@ -63,6 +64,38 @@ func (c *chatApiClient) SendMessage(ctx context.Context, in *SendMessageRequest,
 	return out, nil
 }
 
+func (c *chatApiClient) ConnectChat(ctx context.Context, in *ConnectChatRequest, opts ...grpc.CallOption) (ChatApi_ConnectChatClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ChatApi_ServiceDesc.Streams[0], "/chat_api_v1.ChatApi/ConnectChat", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &chatApiConnectChatClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type ChatApi_ConnectChatClient interface {
+	Recv() (*Message, error)
+	grpc.ClientStream
+}
+
+type chatApiConnectChatClient struct {
+	grpc.ClientStream
+}
+
+func (x *chatApiConnectChatClient) Recv() (*Message, error) {
+	m := new(Message)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ChatApiServer is the server API for ChatApi service.
 // All implementations must embed UnimplementedChatApiServer
 // for forward compatibility
@@ -70,6 +103,7 @@ type ChatApiServer interface {
 	Create(context.Context, *CreateRequest) (*CreateResponse, error)
 	Delete(context.Context, *DeleteRequest) (*emptypb.Empty, error)
 	SendMessage(context.Context, *SendMessageRequest) (*emptypb.Empty, error)
+	ConnectChat(*ConnectChatRequest, ChatApi_ConnectChatServer) error
 	mustEmbedUnimplementedChatApiServer()
 }
 
@@ -85,6 +119,9 @@ func (UnimplementedChatApiServer) Delete(context.Context, *DeleteRequest) (*empt
 }
 func (UnimplementedChatApiServer) SendMessage(context.Context, *SendMessageRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
+}
+func (UnimplementedChatApiServer) ConnectChat(*ConnectChatRequest, ChatApi_ConnectChatServer) error {
+	return status.Errorf(codes.Unimplemented, "method ConnectChat not implemented")
 }
 func (UnimplementedChatApiServer) mustEmbedUnimplementedChatApiServer() {}
 
@@ -153,6 +190,27 @@ func _ChatApi_SendMessage_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ChatApi_ConnectChat_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ConnectChatRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ChatApiServer).ConnectChat(m, &chatApiConnectChatServer{stream})
+}
+
+type ChatApi_ConnectChatServer interface {
+	Send(*Message) error
+	grpc.ServerStream
+}
+
+type chatApiConnectChatServer struct {
+	grpc.ServerStream
+}
+
+func (x *chatApiConnectChatServer) Send(m *Message) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // ChatApi_ServiceDesc is the grpc.ServiceDesc for ChatApi service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -173,6 +231,12 @@ var ChatApi_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ChatApi_SendMessage_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "ConnectChat",
+			Handler:       _ChatApi_ConnectChat_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "chat_api_v1.proto",
 }

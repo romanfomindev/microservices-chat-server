@@ -33,7 +33,7 @@ func main() {
 
 	client := auth.NewAuth(conn)
 
-	err = client.CheckAccess(ctx, "/api/v1/send_message")
+	_, err = client.CheckAccess(ctx, "/api/v1/send_message")
 	if err != nil {
 		log.Fatal("Access denied")
 	}
