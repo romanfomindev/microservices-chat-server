@@ -77,7 +77,7 @@ var createChatCmd = &cobra.Command{
 		}
 		nameStr, err := cmd.Flags().GetString("name")
 		if err != nil {
-			log.Fatalf("failed to get email: %s\n", err.Error())
+			log.Fatalf("failed to get name: %s\n", err.Error())
 		}
 
 		usernames, err := cmd.Flags().GetStringSlice("usernames")
