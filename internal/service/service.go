@@ -9,4 +9,5 @@ type AuthService interface {
 
 type ChatService interface {
 	Create(ctx context.Context, accessToken, chatName string, username []string) (uint64, error)
+	Connect(ctx context.Context, accessToken string, chatId uint64) error
 }

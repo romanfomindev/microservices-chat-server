@@ -4,6 +4,7 @@ import (
 	"context"
 
 	chatserverDesc "github.com/romanfomindev/microservices-chat-server/pkg/chat_api_v1"
+	"github.com/romanfomindev/microservices-chat/clients"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
@@ -12,7 +13,7 @@ type ChatServer struct {
 	connection *grpc.ClientConn
 }
 
-func NewChatServer(connection *grpc.ClientConn) *ChatServer {
+func NewChatServer(connection *grpc.ClientConn) clients.ChatServer {
 	return &ChatServer{
 		connection: connection,
 	}
@@ -49,14 +50,16 @@ func (c *ChatServer) Delete(ctx context.Context, accessToken string, id uint64) 
 	return nil
 }
 
-func (c *ChatServer) SendMessage(ctx context.Context, accessToken, from, text string) error {
+func (c *ChatServer) SendMessage(ctx context.Context, accessToken string, chatId uint64, text string) error {
 	cl := chatserverDesc.NewChatApiClient(c.connection)
 	md := metadata.New(map[string]string{"Authorization": "Bearer " + accessToken})
 	ctx = metadata.NewOutgoingContext(ctx, md)
 
 	_, err := cl.SendMessage(ctx, &chatserverDesc.SendMessageRequest{
-		From: from,
-		Text: text,
+		ChatId: chatId,
+		Message: &chatserverDesc.Message{
+			Text: text,
+		},
 	})
 
 	if err != nil {
@@ -66,16 +69,17 @@ func (c *ChatServer) SendMessage(ctx context.Context, accessToken, from, text st
 	return nil
 }
 
-func (c *ChatServer) Connect(ctx context.Context, accessToken, from, text string) error {
+func (c *ChatServer) Connect(ctx context.Context, accessToken string, chatId uint64) (chatserverDesc.ChatApi_ConnectChatClient, error) {
 	cl := chatserverDesc.NewChatApiClient(c.connection)
 	md := metadata.New(map[string]string{"Authorization": "Bearer " + accessToken})
 	ctx = metadata.NewOutgoingContext(ctx, md)
 
-	//_, err :=
+	stream, err := cl.ConnectChat(ctx, &chatserverDesc.ConnectChatRequest{
+		ChatId: chatId,
+	})
+	if err != nil {
+		return nil, err
+	}
 
-	//if err != nil {
-	//	return err
-	//}
-
-	return nil
+	return stream, nil
 }

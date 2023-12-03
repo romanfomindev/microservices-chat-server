@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/romanfomindev/microservices-chat/internal/app"
 	"github.com/romanfomindev/microservices-chat/internal/config"
@@ -111,10 +112,17 @@ var connectChatCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalf("failed to get email: %s\n", err.Error())
 		}
-		chatID, err := cmd.Flags().GetString("chat")
-		if err != nil {
 
+		chatIDStr, err := cmd.Flags().GetString("chat")
+		if err != nil {
+			log.Fatalf("failed to get chatID: %s\n", err.Error())
 		}
+
+		chatID, err := strconv.ParseUint(chatIDStr, 10, 64)
+		if err != nil {
+			log.Fatalf("failed to parse chatID: %s\n", err.Error())
+		}
+
 		ctx := context.Background()
 		serviceProvicer := app.NewServiceProvider()
 		err = serviceProvicer.ChatService().Connect(ctx, accessToken, chatID)

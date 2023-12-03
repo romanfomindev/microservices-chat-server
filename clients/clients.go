@@ -1,6 +1,10 @@
 package clients
 
-import "context"
+import (
+	"context"
+
+	chatserverDesc "github.com/romanfomindev/microservices-chat-server/pkg/chat_api_v1"
+)
 
 type Auth interface {
 	Login(ctx context.Context, email, password string) (string, error)
@@ -9,7 +13,8 @@ type Auth interface {
 }
 
 type ChatServer interface {
-	Create(ctx context.Context, name string) (uint64, error)
-	Delete(ctx context.Context, chatId uint64) error
-	SendMessage(ctx context.Context, chatId uint64, message string) error
+	Create(ctx context.Context, accessToken, name string, usernames []string) (uint64, error)
+	Delete(ctx context.Context, accessToken string, id uint64) error
+	SendMessage(ctx context.Context, accessToken string, chatId uint64, text string) error
+	Connect(ctx context.Context, accessToken string, chatId uint64) (chatserverDesc.ChatApi_ConnectChatClient, error)
 }
