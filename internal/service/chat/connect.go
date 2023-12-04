@@ -75,7 +75,6 @@ func (s *ChatService) Connect(ctx context.Context, accessToken string, chatId ui
 		}
 
 		text := lines.String()
-		fmt.Println("text:", text)
 		err := client.SendMessage(ctx, accessToken, chatId, text)
 		//_, err = client.SendMessage(ctx, &desc.SendMessageRequest{
 		//	ChatId: chatID,

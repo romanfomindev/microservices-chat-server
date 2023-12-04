@@ -2,6 +2,7 @@ package chat_server
 
 import (
 	"context"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	chatserverDesc "github.com/romanfomindev/microservices-chat-server/pkg/chat_api_v1"
 	"github.com/romanfomindev/microservices-chat/clients"
@@ -58,7 +59,8 @@ func (c *ChatServer) SendMessage(ctx context.Context, accessToken string, chatId
 	_, err := cl.SendMessage(ctx, &chatserverDesc.SendMessageRequest{
 		ChatId: chatId,
 		Message: &chatserverDesc.Message{
-			Text: text,
+			Text:      text,
+			CreatedAt: timestamppb.Now(),
 		},
 	})
 
