@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 
-	accessDesc "github.com/romanfomindev/microservices-chat-server/pkg/access_v1"
+	accessDesc "github.com/romanfomindev/microservices-auth/pkg/access_v1"
 	"google.golang.org/grpc"
 )
 
@@ -19,10 +19,10 @@ func NewAuth(connection *grpc.ClientConn) *Auth {
 	}
 }
 
-func (a *Auth) CheckAccess(ctx context.Context, endpoint string) error {
-	_, err := a.client.Check(ctx, &accessDesc.CheckRequest{
+func (a *Auth) CheckAccess(ctx context.Context, endpoint string) (string, error) {
+	response, err := a.client.Check(ctx, &accessDesc.CheckRequest{
 		EndpointAddress: endpoint,
 	})
 
-	return err
+	return response.GetEmail(), err
 }

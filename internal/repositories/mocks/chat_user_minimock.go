@@ -23,6 +23,12 @@ type ChatUserMock struct {
 	afterCreateBatchCounter  uint64
 	beforeCreateBatchCounter uint64
 	CreateBatchMock          mChatUserMockCreateBatch
+
+	funcFindUserInChat          func(ctx context.Context, chatId uint64, email string) (b1 bool)
+	inspectFuncFindUserInChat   func(ctx context.Context, chatId uint64, email string)
+	afterFindUserInChatCounter  uint64
+	beforeFindUserInChatCounter uint64
+	FindUserInChatMock          mChatUserMockFindUserInChat
 }
 
 // NewChatUserMock returns a mock for repositories.ChatUser
@@ -34,6 +40,9 @@ func NewChatUserMock(t minimock.Tester) *ChatUserMock {
 
 	m.CreateBatchMock = mChatUserMockCreateBatch{mock: m}
 	m.CreateBatchMock.callArgs = []*ChatUserMockCreateBatchParams{}
+
+	m.FindUserInChatMock = mChatUserMockFindUserInChat{mock: m}
+	m.FindUserInChatMock.callArgs = []*ChatUserMockFindUserInChatParams{}
 
 	return m
 }
@@ -254,10 +263,229 @@ func (m *ChatUserMock) MinimockCreateBatchInspect() {
 	}
 }
 
+type mChatUserMockFindUserInChat struct {
+	mock               *ChatUserMock
+	defaultExpectation *ChatUserMockFindUserInChatExpectation
+	expectations       []*ChatUserMockFindUserInChatExpectation
+
+	callArgs []*ChatUserMockFindUserInChatParams
+	mutex    sync.RWMutex
+}
+
+// ChatUserMockFindUserInChatExpectation specifies expectation struct of the ChatUser.FindUserInChat
+type ChatUserMockFindUserInChatExpectation struct {
+	mock    *ChatUserMock
+	params  *ChatUserMockFindUserInChatParams
+	results *ChatUserMockFindUserInChatResults
+	Counter uint64
+}
+
+// ChatUserMockFindUserInChatParams contains parameters of the ChatUser.FindUserInChat
+type ChatUserMockFindUserInChatParams struct {
+	ctx    context.Context
+	chatId uint64
+	email  string
+}
+
+// ChatUserMockFindUserInChatResults contains results of the ChatUser.FindUserInChat
+type ChatUserMockFindUserInChatResults struct {
+	b1 bool
+}
+
+// Expect sets up expected params for ChatUser.FindUserInChat
+func (mmFindUserInChat *mChatUserMockFindUserInChat) Expect(ctx context.Context, chatId uint64, email string) *mChatUserMockFindUserInChat {
+	if mmFindUserInChat.mock.funcFindUserInChat != nil {
+		mmFindUserInChat.mock.t.Fatalf("ChatUserMock.FindUserInChat mock is already set by Set")
+	}
+
+	if mmFindUserInChat.defaultExpectation == nil {
+		mmFindUserInChat.defaultExpectation = &ChatUserMockFindUserInChatExpectation{}
+	}
+
+	mmFindUserInChat.defaultExpectation.params = &ChatUserMockFindUserInChatParams{ctx, chatId, email}
+	for _, e := range mmFindUserInChat.expectations {
+		if minimock.Equal(e.params, mmFindUserInChat.defaultExpectation.params) {
+			mmFindUserInChat.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmFindUserInChat.defaultExpectation.params)
+		}
+	}
+
+	return mmFindUserInChat
+}
+
+// Inspect accepts an inspector function that has same arguments as the ChatUser.FindUserInChat
+func (mmFindUserInChat *mChatUserMockFindUserInChat) Inspect(f func(ctx context.Context, chatId uint64, email string)) *mChatUserMockFindUserInChat {
+	if mmFindUserInChat.mock.inspectFuncFindUserInChat != nil {
+		mmFindUserInChat.mock.t.Fatalf("Inspect function is already set for ChatUserMock.FindUserInChat")
+	}
+
+	mmFindUserInChat.mock.inspectFuncFindUserInChat = f
+
+	return mmFindUserInChat
+}
+
+// Return sets up results that will be returned by ChatUser.FindUserInChat
+func (mmFindUserInChat *mChatUserMockFindUserInChat) Return(b1 bool) *ChatUserMock {
+	if mmFindUserInChat.mock.funcFindUserInChat != nil {
+		mmFindUserInChat.mock.t.Fatalf("ChatUserMock.FindUserInChat mock is already set by Set")
+	}
+
+	if mmFindUserInChat.defaultExpectation == nil {
+		mmFindUserInChat.defaultExpectation = &ChatUserMockFindUserInChatExpectation{mock: mmFindUserInChat.mock}
+	}
+	mmFindUserInChat.defaultExpectation.results = &ChatUserMockFindUserInChatResults{b1}
+	return mmFindUserInChat.mock
+}
+
+// Set uses given function f to mock the ChatUser.FindUserInChat method
+func (mmFindUserInChat *mChatUserMockFindUserInChat) Set(f func(ctx context.Context, chatId uint64, email string) (b1 bool)) *ChatUserMock {
+	if mmFindUserInChat.defaultExpectation != nil {
+		mmFindUserInChat.mock.t.Fatalf("Default expectation is already set for the ChatUser.FindUserInChat method")
+	}
+
+	if len(mmFindUserInChat.expectations) > 0 {
+		mmFindUserInChat.mock.t.Fatalf("Some expectations are already set for the ChatUser.FindUserInChat method")
+	}
+
+	mmFindUserInChat.mock.funcFindUserInChat = f
+	return mmFindUserInChat.mock
+}
+
+// When sets expectation for the ChatUser.FindUserInChat which will trigger the result defined by the following
+// Then helper
+func (mmFindUserInChat *mChatUserMockFindUserInChat) When(ctx context.Context, chatId uint64, email string) *ChatUserMockFindUserInChatExpectation {
+	if mmFindUserInChat.mock.funcFindUserInChat != nil {
+		mmFindUserInChat.mock.t.Fatalf("ChatUserMock.FindUserInChat mock is already set by Set")
+	}
+
+	expectation := &ChatUserMockFindUserInChatExpectation{
+		mock:   mmFindUserInChat.mock,
+		params: &ChatUserMockFindUserInChatParams{ctx, chatId, email},
+	}
+	mmFindUserInChat.expectations = append(mmFindUserInChat.expectations, expectation)
+	return expectation
+}
+
+// Then sets up ChatUser.FindUserInChat return parameters for the expectation previously defined by the When method
+func (e *ChatUserMockFindUserInChatExpectation) Then(b1 bool) *ChatUserMock {
+	e.results = &ChatUserMockFindUserInChatResults{b1}
+	return e.mock
+}
+
+// FindUserInChat implements repositories.ChatUser
+func (mmFindUserInChat *ChatUserMock) FindUserInChat(ctx context.Context, chatId uint64, email string) (b1 bool) {
+	mm_atomic.AddUint64(&mmFindUserInChat.beforeFindUserInChatCounter, 1)
+	defer mm_atomic.AddUint64(&mmFindUserInChat.afterFindUserInChatCounter, 1)
+
+	if mmFindUserInChat.inspectFuncFindUserInChat != nil {
+		mmFindUserInChat.inspectFuncFindUserInChat(ctx, chatId, email)
+	}
+
+	mm_params := &ChatUserMockFindUserInChatParams{ctx, chatId, email}
+
+	// Record call args
+	mmFindUserInChat.FindUserInChatMock.mutex.Lock()
+	mmFindUserInChat.FindUserInChatMock.callArgs = append(mmFindUserInChat.FindUserInChatMock.callArgs, mm_params)
+	mmFindUserInChat.FindUserInChatMock.mutex.Unlock()
+
+	for _, e := range mmFindUserInChat.FindUserInChatMock.expectations {
+		if minimock.Equal(e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.b1
+		}
+	}
+
+	if mmFindUserInChat.FindUserInChatMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmFindUserInChat.FindUserInChatMock.defaultExpectation.Counter, 1)
+		mm_want := mmFindUserInChat.FindUserInChatMock.defaultExpectation.params
+		mm_got := ChatUserMockFindUserInChatParams{ctx, chatId, email}
+		if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmFindUserInChat.t.Errorf("ChatUserMock.FindUserInChat got unexpected parameters, want: %#v, got: %#v%s\n", *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmFindUserInChat.FindUserInChatMock.defaultExpectation.results
+		if mm_results == nil {
+			mmFindUserInChat.t.Fatal("No results are set for the ChatUserMock.FindUserInChat")
+		}
+		return (*mm_results).b1
+	}
+	if mmFindUserInChat.funcFindUserInChat != nil {
+		return mmFindUserInChat.funcFindUserInChat(ctx, chatId, email)
+	}
+	mmFindUserInChat.t.Fatalf("Unexpected call to ChatUserMock.FindUserInChat. %v %v %v", ctx, chatId, email)
+	return
+}
+
+// FindUserInChatAfterCounter returns a count of finished ChatUserMock.FindUserInChat invocations
+func (mmFindUserInChat *ChatUserMock) FindUserInChatAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmFindUserInChat.afterFindUserInChatCounter)
+}
+
+// FindUserInChatBeforeCounter returns a count of ChatUserMock.FindUserInChat invocations
+func (mmFindUserInChat *ChatUserMock) FindUserInChatBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmFindUserInChat.beforeFindUserInChatCounter)
+}
+
+// Calls returns a list of arguments used in each call to ChatUserMock.FindUserInChat.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmFindUserInChat *mChatUserMockFindUserInChat) Calls() []*ChatUserMockFindUserInChatParams {
+	mmFindUserInChat.mutex.RLock()
+
+	argCopy := make([]*ChatUserMockFindUserInChatParams, len(mmFindUserInChat.callArgs))
+	copy(argCopy, mmFindUserInChat.callArgs)
+
+	mmFindUserInChat.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockFindUserInChatDone returns true if the count of the FindUserInChat invocations corresponds
+// the number of defined expectations
+func (m *ChatUserMock) MinimockFindUserInChatDone() bool {
+	for _, e := range m.FindUserInChatMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	// if default expectation was set then invocations count should be greater than zero
+	if m.FindUserInChatMock.defaultExpectation != nil && mm_atomic.LoadUint64(&m.afterFindUserInChatCounter) < 1 {
+		return false
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcFindUserInChat != nil && mm_atomic.LoadUint64(&m.afterFindUserInChatCounter) < 1 {
+		return false
+	}
+	return true
+}
+
+// MinimockFindUserInChatInspect logs each unmet expectation
+func (m *ChatUserMock) MinimockFindUserInChatInspect() {
+	for _, e := range m.FindUserInChatMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to ChatUserMock.FindUserInChat with params: %#v", *e.params)
+		}
+	}
+
+	// if default expectation was set then invocations count should be greater than zero
+	if m.FindUserInChatMock.defaultExpectation != nil && mm_atomic.LoadUint64(&m.afterFindUserInChatCounter) < 1 {
+		if m.FindUserInChatMock.defaultExpectation.params == nil {
+			m.t.Error("Expected call to ChatUserMock.FindUserInChat")
+		} else {
+			m.t.Errorf("Expected call to ChatUserMock.FindUserInChat with params: %#v", *m.FindUserInChatMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcFindUserInChat != nil && mm_atomic.LoadUint64(&m.afterFindUserInChatCounter) < 1 {
+		m.t.Error("Expected call to ChatUserMock.FindUserInChat")
+	}
+}
+
 // MinimockFinish checks that all mocked methods have been called the expected number of times
 func (m *ChatUserMock) MinimockFinish() {
 	if !m.minimockDone() {
 		m.MinimockCreateBatchInspect()
+
+		m.MinimockFindUserInChatInspect()
 		m.t.FailNow()
 	}
 }
@@ -281,5 +509,6 @@ func (m *ChatUserMock) MinimockWait(timeout mm_time.Duration) {
 func (m *ChatUserMock) minimockDone() bool {
 	done := true
 	return done &&
-		m.MinimockCreateBatchDone()
+		m.MinimockCreateBatchDone() &&
+		m.MinimockFindUserInChatDone()
 }

@@ -42,3 +42,24 @@ func (r *ChatUser) CreateBatch(ctx context.Context, chatUsers models.ChatUser) e
 
 	return err
 }
+
+func (r *ChatUser) FindUserInChat(ctx context.Context, chatId uint64, email string) bool {
+	sqlStatement := `
+		SELECT EXISTS (
+			SELECT 1 FROM chat_users WHERE chat_id = $1 AND username = $2
+		)
+	`
+	q := db.Query{
+		Name:     "chat_users.FindUserInChat",
+		QueryRaw: sqlStatement,
+	}
+
+	var exist bool
+
+	err := r.db.DB().QueryRowContext(ctx, q, chatId, email).Scan(&exist)
+	if err != nil {
+		return false
+	}
+
+	return exist
+}

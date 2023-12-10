@@ -13,4 +13,5 @@ type Chat interface {
 
 type ChatUser interface {
 	CreateBatch(ctx context.Context, chatUsers models.ChatUser) error
+	FindUserInChat(ctx context.Context, chatId uint64, email string) bool
 }
