@@ -12,7 +12,7 @@ import (
 	"github.com/romanfomindev/microservices-chat-server/internal/repositories/chat_user"
 	"github.com/romanfomindev/microservices-chat-server/internal/services"
 	"github.com/romanfomindev/microservices-chat-server/internal/services/chat"
-	stream2 "github.com/romanfomindev/microservices-chat-server/internal/services/stream"
+	streamService "github.com/romanfomindev/microservices-chat-server/internal/services/stream"
 	"github.com/romanfomindev/platform_common/pkg/closer"
 	"github.com/romanfomindev/platform_common/pkg/db"
 	"github.com/romanfomindev/platform_common/pkg/db/pg"
@@ -113,8 +113,7 @@ func (s *serviceProvider) ChatService(ctx context.Context) services.ChatService 
 
 func (s *serviceProvider) ChatHandlers(ctx context.Context) *handlers.ChatApiService {
 	if s.chatHandlers == nil {
-		streamService := stream2.NewImplementation()
-		s.chatHandlers = handlers.NewChatService(s.ChatService(ctx), streamService)
+		s.chatHandlers = handlers.NewChatService(s.ChatService(ctx), streamService.NewImplementation())
 	}
 	return s.chatHandlers
 }

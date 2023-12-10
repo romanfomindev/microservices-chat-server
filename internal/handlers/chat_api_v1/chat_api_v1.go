@@ -5,8 +5,6 @@ import (
 	"errors"
 	"log"
 
-	"github.com/romanfomindev/microservices-chat-server/internal/interceptor"
-
 	"github.com/romanfomindev/microservices-chat-server/internal/convertor"
 	"github.com/romanfomindev/microservices-chat-server/internal/models"
 	"github.com/romanfomindev/microservices-chat-server/internal/services"
@@ -72,16 +70,7 @@ func (s *ChatApiService) SendMessage(ctx context.Context, request *desc.SendMess
 
 func (s *ChatApiService) ConnectChat(req *desc.ConnectChatRequest, stream desc.ChatApi_ConnectChatServer) error {
 	chatId := req.GetChatId()
-
-	token, err := interceptor.GetAccessToken(stream.Context())
-	if err != nil {
-		return err
-	}
-
-	email, err := interceptor.CheckAccess(token, "/chat_api_v1.ChatApi/ConnectChat")
-	if err != nil {
-		return err
-	}
+	email := stream.Context().Value("email").(string)
 
 	return s.StreamService.ConnectChat(chatId, email, stream)
 }

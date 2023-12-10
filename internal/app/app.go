@@ -71,6 +71,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 		grpc.UnaryInterceptor(grpcMiddleware.ChainUnaryServer(
 			interceptor.AccessInterceptor,
 		)),
+		grpc.StreamInterceptor(interceptor.StreamAccessInterceptor),
 	)
 
 	reflection.Register(a.grpcServer)
